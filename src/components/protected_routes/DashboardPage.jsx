@@ -27,7 +27,7 @@ const style = {
   p: 4,
 };
 
-export const DashboardPage = ({ userID, logout }) => {
+export const DashboardPage = ({ logout }) => {
   const [user, setUser] = useState(undefined);
 
   const [open, setOpen] = useState(false);
@@ -37,6 +37,7 @@ export const DashboardPage = ({ userID, logout }) => {
   const [formData, setFormData] = useState({
     name: user?.name ?? "",
     phone: user?.phone ?? "",
+    photo: null,
   });
 
   const [errors, setErrors] = useState({
@@ -52,8 +53,14 @@ export const DashboardPage = ({ userID, logout }) => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
+  useEffect(() => {
+    setFormData({ name: user?.name, phone: user?.phone });
+  }, [user]);
+
   const isFormValid =
-    Object.values(formData).every((field) => field.trim() !== "") &&
+    Object.entries(formData)
+      .filter(([key]) => key !== "photo")
+      .every(([, value]) => value?.trim() !== "") &&
     Object.values(errors).every((error) => error === "");
 
   const handleSubmit = async (e) => {
@@ -65,13 +72,16 @@ export const DashboardPage = ({ userID, logout }) => {
       const response = await usersController.editUser({
         name: formData.name,
         phone: formData.phone,
+        photo: formData.photo,
       });
 
       setUser((d) => ({
         name: response.data.name,
         phone: response.data.phone,
+        photo: { ...d.photo, url: response.data.photourl },
         ...d,
       }));
+
       setMessage("Your details were edited successfully!");
       toast.success(message);
       // eslint-disable-next-line no-unused-vars
@@ -159,6 +169,21 @@ export const DashboardPage = ({ userID, logout }) => {
                       className="space-y-4 mt-4"
                       onSubmit={handleSubmit}
                     >
+                      <div>
+                        <div className="text-white font-extrabold text-sm sm:text-base">
+                          <span className="text-[#8420FF]">Upload a</span>{" "}
+                          profile picture
+                        </div>
+                        <div className="rounded-md bg-gradient-to-r from-red-700 via-purple-800 to-blue-900 p-px">
+                          <input
+                            accept="image/*"
+                            className="w-full rounded-md bg-[var(--color-background)] p-4 file:mr-2 file:rounded-full file:border-0 file:bg-violet-50 file:px-3 file:p-2 file:text-sm file:font-semibold file:text-violet-700 hover:file:bg-violet-100"
+                            name="photo"
+                            type="file"
+                            onChange={handleChange}
+                          />
+                        </div>
+                      </div>
                       <TextInput
                         labelContent={
                           <>
@@ -200,10 +225,16 @@ export const DashboardPage = ({ userID, logout }) => {
                 src={user?.photo?.url ?? "/empty-user.svg"}
                 alt="User profile picture"
               />
-              <div className="flex flex-col items-start">
-                <p>Name: {user?.name}</p>
-                <p>Email: {user?.email}</p>
-                <p>Phone No.: {user?.phone ?? "Not available"}</p>
+              <div className="flex flex-col items-start text-base">
+                <p className="relative after:absolute after:left-0 after:bottom-[0.3em] after:h-[0.1em] after:w-full after:bg-gradient-to-r after:from-red-700 after:via-purple-800 after:to-blue-900">
+                  NAME: {user?.name}
+                </p>
+                <p className="relative after:absolute after:left-0 after:bottom-[0.3em] after:h-[0.1em] after:w-full after:bg-gradient-to-r after:from-red-700 after:via-purple-800 after:to-blue-900">
+                  EMAIL: {user?.email}
+                </p>
+                <p className="relative after:absolute after:left-0 after:bottom-[0.3em] after:h-[0.1em] after:w-full after:bg-gradient-to-r after:from-red-700 after:via-purple-800 after:to-blue-900">
+                  PHONE NO.: {user?.phone ?? "Not available"}
+                </p>
               </div>
             </section>
           </div>

@@ -9,7 +9,7 @@ import { CONST } from "../../config";
 import MascotAnimation from "../home/MascotAnimation";
 import toast from "react-hot-toast";
 
-const Login = ({ user }) => {
+const Login = ({ user, setActiveUser }) => {
   const navigate = useNavigate();
 
   const [imageSrc, setImageSrc] = useState("");
@@ -49,11 +49,6 @@ const Login = ({ user }) => {
   };
 
   useEffect(() => {
-    if (user !== "") {
-      navigate("/dashboard");
-      return;
-    }
-
     serviceController
       .isOAuth2GoogleAvailable()
       .then((response) => {
@@ -65,7 +60,7 @@ const Login = ({ user }) => {
       .catch((error) => {
         console.error("Error checking Google OAuth availability:", error);
       });
-  }, [navigate, user]);
+  }, [navigate]);
 
   useEffect(() => {
     if (message !== "") toast.error(message, { position: "bottom-right" });
@@ -74,7 +69,7 @@ const Login = ({ user }) => {
   const startWithGoogle = function (e) {
     e.preventDefault();
 
-    if (!(user !== "")) {
+    if (user !== "") {
       toast("You are already logged in! Redirecting you to your dashboard.");
       setTimeoutID(
         setTimeout(() => {
@@ -104,6 +99,7 @@ const Login = ({ user }) => {
 
     localStorage.setItem("sid", sid.id);
     localStorage.setItem("providerID", sid.providerId[0].providerUserId);
+    setActiveUser();
     navigate("/dashboard");
   };
 
@@ -126,7 +122,7 @@ const Login = ({ user }) => {
     // Set loading state to true while the API request is in progress
     setLoading(true);
 
-    if (!(user !== "")) {
+    if (user !== "") {
       toast("You are already logged in! Redirecting you to your dashboard.");
       setTimeoutID(
         setTimeout(() => {
@@ -171,6 +167,7 @@ const Login = ({ user }) => {
 
       localStorage.setItem("sid", sid.id);
 
+      setActiveUser();
       // Redirect to EmailVerify page with formData (including email)
       navigate("/dashboard", { state: { userData: response.data } });
     } catch (error) {

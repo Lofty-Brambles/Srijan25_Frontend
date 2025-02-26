@@ -9,7 +9,7 @@ import MascotAnimation from "../home/MascotAnimation";
 import toast from "react-hot-toast";
 
 // eslint-disable-next-line react/prop-types
-const Signup = ({ user }) => {
+const Signup = ({ user, setActiveUser }) => {
   const navigate = useNavigate();
 
   const [imageSrc, setImageSrc] = useState("");
@@ -60,11 +60,6 @@ const Signup = ({ user }) => {
   };
 
   useEffect(() => {
-    if (user !== "") {
-      navigate("/dashboard");
-      return;
-    }
-
     serviceController
       .isOAuth2GoogleAvailable()
       .then((response) => {
@@ -76,7 +71,7 @@ const Signup = ({ user }) => {
       .catch((error) => {
         console.error("Error checking Google OAuth availability:", error);
       });
-  }, [navigate, user]);
+  }, [navigate]);
 
   useEffect(() => {
     if (message !== "") toast.error(message, { position: "bottom-right" });
@@ -85,7 +80,7 @@ const Signup = ({ user }) => {
   const startWithGoogle = function (e) {
     e.preventDefault();
 
-    if (!(user !== "")) {
+    if (user !== "") {
       toast("You are already logged in! Redirecting you to your dashboard.");
       setTimeoutID(
         setTimeout(() => {
@@ -115,6 +110,7 @@ const Signup = ({ user }) => {
 
     localStorage.setItem("sid", sid.id);
     localStorage.setItem("providerID", sid.providerId[0].providerUserId);
+    setActiveUser();
     navigate("/dashboard");
   };
 
@@ -137,7 +133,7 @@ const Signup = ({ user }) => {
     // Set loading state to true while the API request is in progress
     setLoading(true);
 
-    if (!(user !== "")) {
+    if (user !== "") {
       toast("You are already logged in! Redirecting you to your dashboard.");
       setTimeoutID(
         setTimeout(() => {
@@ -161,6 +157,7 @@ const Signup = ({ user }) => {
       const { sid } = response.data;
 
       localStorage.setItem("sid", sid.id);
+      setActiveUser();
       // Redirect to EmailVerify page with formData (including email)
       navigate("/verify", { state: { formData } });
     } catch (error) {

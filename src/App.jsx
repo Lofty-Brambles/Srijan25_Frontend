@@ -1,5 +1,5 @@
 import "./App.css";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { LandingPage } from "./components/home/LandingPage";
 import MerchandisePage from "./components/MerchandisePage";
 import Eventpage from "./components/Events/Eventpage";
@@ -29,24 +29,12 @@ function App() {
     await logoutCall();
   };
 
-  useEffect(() => {
+  const setActiveUser = () => {
     const sid = localStorage.getItem("sid");
     setUser(sid ?? "");
-
-    const token = localStorage.getItem("token");
-    if (token) verifyToken(token);
-  }, [user]);
-
-  const verifyToken = async (token) => {
-    const headers = { Authorization: `Bearer ${token}` };
-    const response = await fetch("/api/verify", { headers });
-    if (response.ok) {
-      setUser(token);
-    } else {
-      setUser("");
-      localStorage.removeItem("sid");
-    }
   };
+
+  useEffect(setActiveUser, [user]);
 
   return (
     <>
@@ -56,7 +44,7 @@ function App() {
           <Route element={<ProtectedRoute accessAllowed={!!user} />}>
             <Route
               path="/dashboard"
-              element={<DashboardPage userID={user} logout={handleLogout} />}
+              element={<DashboardPage logout={handleLogout} />}
             />
           </Route>
           <Route>
@@ -83,11 +71,11 @@ function App() {
           <Route path="/eventregistration" element={<EventRegistration />} />
           <Route
             path="/signup"
-            element={<Signup user={user} setUser={setUser} />}
+            element={<Signup user={user} setActiveUser={setActiveUser} />}
           />
           <Route
             path="/login"
-            element={<Login user={user} setUser={setUser} />}
+            element={<Login user={user} setActiveUser={setActiveUser} />}
           />
           <Route path="/verify" element={<EmailVerify />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
@@ -96,7 +84,24 @@ function App() {
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </Router>
-      <Toaster />
+      <Toaster
+        toastOptions={{
+          duration: 2000,
+          style: {
+            backgroundColor: "#141414",
+            borderRadius: "6px",
+            fontSize: "16px",
+            padding: "6px",
+            color: "white",
+            borderTop: "1px solid #b60000",
+            borderLeft: "1px solid #b60000",
+            borderBottom: "1px solid #532e8f",
+            borderRight: "1px solid #532e8f",
+            zIndex: 1005,
+            textAlign: "center",
+          },
+        }}
+      />
     </>
   );
 }
