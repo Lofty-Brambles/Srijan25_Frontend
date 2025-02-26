@@ -100,7 +100,11 @@ const Login = ({ user, setActiveUser }) => {
     localStorage.setItem("sid", sid.id);
     localStorage.setItem("providerID", sid.providerId[0].providerUserId);
     setActiveUser();
-    navigate("/dashboard");
+    if(sid.isNewUser == true){
+      navigate("/referral", { state: { allowed: true } });
+    }else{
+      navigate("/dashboard");
+    }
   };
 
   const onFailLogin = function (error) {
@@ -187,7 +191,7 @@ const Login = ({ user, setActiveUser }) => {
           }));
         }
       } else {
-        setMessage("Error registering user. Try again.");
+        setMessage("Error logging the user in. Try again.");
       }
     } finally {
       // Set loading state to false once the request is complete (success or error)

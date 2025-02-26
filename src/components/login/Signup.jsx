@@ -23,7 +23,7 @@ const Signup = ({ user, setActiveUser }) => {
     phone: "",
     password: "",
     confirmPassword: "",
-    consent: "",
+    campusReferralCode: "",
   });
 
   const [errors, setErrors] = useState({
@@ -32,6 +32,7 @@ const Signup = ({ user, setActiveUser }) => {
     password: "",
     confirmPassword: "",
     consent: "",
+    campusReferralCode: "",
   });
 
   const handleChange = (e) => {
@@ -39,16 +40,10 @@ const Signup = ({ user, setActiveUser }) => {
 
     setFormData({ ...formData, [name]: value });
 
-    if (name === "consent") {
-      if (value !== "y" && value !== "n") {
-        setErrors((prev) => ({
-          ...prev,
-          consent: "Type 'y' for yes or 'n' for no",
-        }));
-      } else {
-        setErrors((prev) => ({ ...prev, consent: "" }));
-      }
-    }
+    setErrors((prev) => ({
+      ...prev,
+      [name]: "",
+    }));
   };
 
   const handleInputFocus = () => {
@@ -112,6 +107,11 @@ const Signup = ({ user, setActiveUser }) => {
     localStorage.setItem("providerID", sid.providerId[0].providerUserId);
     setActiveUser();
     navigate("/dashboard");
+    if(sid.isNewUser == true){
+      navigate("/referral", { state: { allowed: true } });
+    }else{
+      navigate("/dashboard");
+    }
   };
 
   const onFailLogin = function (error) {
@@ -176,6 +176,12 @@ const Signup = ({ user, setActiveUser }) => {
             phone: "This phone number is already registered",
           }));
         }
+        if (keyPattern.campusReferralCode) {
+          setErrors((prev) => ({
+            ...prev,
+            campusReferralCode: "Invalid referral code",
+          }));
+        }
       } else {
         console.log(error);
         setMessage("Error registering user. Try again.");
@@ -187,8 +193,11 @@ const Signup = ({ user, setActiveUser }) => {
   };
 
   const isFormValid =
-    Object.values(formData).every((field) => field.trim() !== "") &&
-    Object.values(errors).every((error) => error === "");
+  Object.entries(formData)
+    .filter(([key]) => key !== "campusReferralCode") // Exclude campusReferralCode from validation
+    .every(([_, value]) => value.trim() !== "") &&
+  Object.values(errors).every((error) => error === "");
+
 
   return (
     <div className="w-full relative">
@@ -327,24 +336,18 @@ const Signup = ({ user, setActiveUser }) => {
                 labelContent={
                   <>
                     <span className="text-[#8420FF]">
-                      Would you like to receive{" "}
+                      Enter{" "}
                     </span>
-                    updates <span className="text-[#8420FF]">and</span>{" "}
-                    announcements <span className="text-[#8420FF]">via</span>{" "}
-                    email<span className="text-[#8420FF]">?</span>
-                    <br />
-                    <span className="text-[#8420FF]"> Type “</span>y
-                    <span className="text-[#8420FF]">” for</span> yes{" "}
-                    <span className="text-[#8420FF]">or “</span>n
-                    <span className="text-[#8420FF]">” for</span> no
+                    Campus Referral <span className="text-[#8420FF]">Code</span>{" "}
+                    {"(if any)"} 
                   </>
                 }
-                name="consent"
+                name="campusReferralCode"
                 type="text"
-                placeholder='"y" for yes & "n" for no'
-                value={formData.consent}
+                placeholder='Enter Referral Code'
+                value={formData.campusReferralCode}
                 className="lg:w-2/5"
-                error={errors.consent}
+                error={errors.campusReferralCode}
                 onChange={handleChange}
                 onFocus={handleInputFocus}
                 onBlur={handleInputBlur}
